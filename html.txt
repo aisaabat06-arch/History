@@ -1,0 +1,447 @@
+```html
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тарих Флешкарталары</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+
+        /* 3D Flip Card Styles */
+        .flip-card-container {
+            perspective: 1000px;
+        }
+
+        .flip-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1);
+            transform-style: preserve-3d;
+            cursor: pointer;
+        }
+
+        .flip-card-inner.is-flipped {
+            transform: rotateX(180deg);
+        }
+
+        .flip-card-front, .flip-card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        .flip-card-front {
+            background-color: white;
+            color: #1f2937;
+            border-top: 4px solid #3b82f6; /* Blue top border for question */
+        }
+
+        .flip-card-back {
+            background-color: #f8fafc;
+            color: #0f172a;
+            transform: rotateX(180deg);
+            border-top: 4px solid #10b981; /* Green top border for answer */
+        }
+
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+        .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col text-gray-800">
+
+    <nav class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <div class="flex items-center gap-2">
+                    <div class="bg-blue-600 text-white p-2 rounded-lg">
+                        <i class="fa-solid fa-layer-group text-xl"></i>
+                    </div>
+                    <span class="font-bold text-xl text-gray-900 tracking-tight">Тарих<span class="text-blue-600">Quiz</span></span>
+                </div>
+                <div class="text-sm font-medium text-gray-500 hidden sm:block">
+                    Ерте орта ғасырлардағы Қазақстан
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="flex-grow max-w-5xl mx-auto w-full px-4 sm:px-6 py-8 flex flex-col gap-8">
+        
+        <!-- Category Tabs -->
+        <div class="w-full">
+            <div class="flex overflow-x-auto scrollbar-hide py-2 gap-2" id="category-tabs">
+                <!-- Tabs will be injected here by JS -->
+            </div>
+        </div>
+
+        <!-- Progress and Flashcard Area -->
+        <div class="flex flex-col items-center w-full max-w-3xl mx-auto">
+            
+            <div class="w-full flex justify-between items-center mb-4 px-2 text-sm font-medium text-gray-500">
+                <span id="current-category-title" class="text-blue-600 font-bold uppercase tracking-wider"></span>
+                <span id="card-counter">1 / 10</span>
+            </div>
+
+            <div class="flip-card-container w-full h-80 sm:h-96 relative select-none" id="flashcard" onclick="flipCard()">
+                <div class="flip-card-inner" id="flashcard-inner">
+                    <!-- Front (Question) -->
+                    <div class="flip-card-front flex-col gap-4">
+                        <span class="text-xs uppercase tracking-widest text-blue-500 font-semibold absolute top-4 left-6">Сұрақ</span>
+                        <p id="card-question" class="text-xl sm:text-2xl font-medium text-center leading-snug"></p>
+                        <p class="text-gray-400 text-sm absolute bottom-4"><i class="fa-solid fa-hand-pointer mr-1"></i> Аудару үшін басыңыз</p>
+                    </div>
+                    <!-- Back (Answer) -->
+                    <div class="flip-card-back flex-col gap-4">
+                        <span class="text-xs uppercase tracking-widest text-green-500 font-semibold absolute top-4 left-6">Жауап</span>
+                        <p id="card-answer" class="text-2xl sm:text-3xl font-bold text-center text-green-700"></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Controls -->
+            <div class="flex items-center justify-center gap-6 mt-8 w-full">
+                <button onclick="prevCard()" class="w-12 h-12 rounded-full bg-white shadow-md flex items-center justify-center text-gray-600 hover:text-blue-600 hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <i class="fa-solid fa-arrow-left text-xl"></i>
+                </button>
+                <div class="flex gap-2">
+                    <button onclick="shuffleCards()" class="px-4 py-2 rounded-lg bg-gray-200 text-gray-700 font-medium hover:bg-gray-300 transition-colors flex items-center gap-2">
+                        <i class="fa-solid fa-shuffle"></i> Араластыру
+                    </button>
+                </div>
+                <button onclick="nextCard()" class="w-12 h-12 rounded-full bg-white shadow-md flex items-center justify-center text-gray-600 hover:text-blue-600 hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <i class="fa-solid fa-arrow-right text-xl"></i>
+                </button>
+            </div>
+            <p class="text-gray-400 text-xs mt-4 hidden sm:block">Басқару үшін пернетақтадағы ⬅️ ➡️ және Space (Бос орын) батырмаларын қолдануға болады.</p>
+        </div>
+
+        <!-- List View -->
+        <div class="mt-12 w-full">
+            <h2 class="text-2xl font-bold mb-6 text-gray-800 border-b pb-2">Осы бөлімдегі барлық сұрақтар</h2>
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                <ul id="questions-list" class="divide-y divide-gray-200">
+                    <!-- List items will be injected here -->
+                </ul>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Data Structure categorized based on user request
+        const quizData = {
+            "Түргеш қағанаты": [
+                { q: "VI ғасырда Батыс Түрік қағанатының сол қанатына енген, саны жағынан көп болған тайпа?", a: "Түргеш" },
+                { q: "Түргеш қағанаты мемлекеттік-әкімшілік, әскери және мәдени дәстүрлерін жалғастырды?", a: "Батыс Түрік қағанатының" },
+                { q: "704 жылы Жетісуда билік басына келген мемлекеттік бірлестік?", a: "Түргештер" },
+                { q: "Түргештер бөлініп шыққан тайпа?", a: "Дулу" },
+                { q: "Түргештер иемденген жер аумағы?", a: "Шу-Іле өзендері аралығы" },
+                { q: "Түргештер бөлінген топтар?", a: "шулық, ілелік" },
+                { q: "VIII ғасырдың басында құрылған мемлекет?", a: "Түргеш" },
+                { q: "Түргеш қағандығының құрылуына жол ашқан оқиға?", a: "Үшліктің қытайлармен күресте жеңіске жетуі" },
+                { q: "Түргеш қағанатының негізгі жер аумағы?", a: "Жетісу" },
+                { q: "Түргеш мемлекетінің негізін қалаған қаған?", a: "Үшлік" },
+                { q: "Үшлік қаған өзінің негізгі тайпаларын бөлді?", a: "Екі ордаға" },
+                { q: "Үшлік қағанның Үлкен ордасы орналасқан қала?", a: "Суяб" },
+                { q: "Үшлік қағанның Кіші ордасы орналасқан қала?", a: "Күңгіт" },
+                { q: "Түргеш қағанатының Іле өзені бойындағы кіші ордасы?", a: "Күңгіт" },
+                { q: "Түргеш қағанаты бөлінген аймақ саны?", a: "20" },
+                { q: "Түргеш тарихындағы ең белгілі билеушілер?", a: "Үшлік пен Сұлу" },
+                { q: "715-738 жылдары билік құрған Түргеш қағаны?", a: "Сұлу" },
+                { q: "Сұлу қаған 715-738 жылдары билікке келгеннен кейін қайта күшейген ел?", a: "Түргеш қағандығы" },
+                { q: "Түргеш қағанатының ішкі-сыртқы саяси жағдайының шиеленісіп тұрған кезінде билікке келді?", a: "Сұлу" },
+                { q: "Түргеш қағандығының тәуелсіздігі үшін үш жақты күрес жүргізген қаған?", a: "Сұлу" },
+                { q: "Түргеш қағандығына оңтүстік-батыстан қауіп төндірген мемлекет?", a: "Арабтар" },
+                { q: "Түргештерге шығыстан қауіп төндірген ел?", a: "Шығыс Түрік қағандығы" },
+                { q: "Түргештерге оңтүстік-шығыстан қауіп төндірген ел?", a: "Қытай" },
+                { q: "Арабтардың жеріндегі және оның Соғдыдағы иеліктеріне қауіп төндірген билеуші?", a: "Сұлу" },
+                { q: "Сұлу қағанның ордасы көшірілген қала?", a: "Тараз" },
+                { q: "Сұлу қағанның шайқастарға тікелей өзі қатысуына, әрі үнемі жеңіске жетуіне байланысты арабтардың оған қойған лақап аты?", a: "«Әбу Музахим», «Сүзеген», «мүйізді қаған»" },
+                { q: "Арабтар «Сүзеген» деп атаған қаған?", a: "Сұлу" },
+                { q: "Сұлу қағанның дипломатиялық және әскери шаралары?", a: "Қытай тарапынан төнген қауіптің алдын алды" },
+                { q: "740 жылы қытай әскері басып алған қала?", a: "Тараз" },
+                { q: "748 жылы Түргештердің астанасы Суяб қаласын басып алған?", a: "Қытай империясы" },
+                { q: "751 ж. Атлах қаласының жанында үлкен шайқас болды?", a: "Арабтар мен қытайлар арасында" },
+                { q: "Атлах түбіндегі шайқасқа қатысқан тайпалар?", a: "қарлұқтар мен түргештер" },
+                { q: "751 жылы Қытайдың батысқа жорығын тоқтатты?", a: "Талас бойындағы Атлах шайқасы" },
+                { q: "Атлах (Талас) шайқасы болған мерзім?", a: "751 ж." },
+                { q: "Атлах шайқасының тарихи маңызы?", a: "Орта Азияға Ислам мәдениеті тарай бастады, Ислам дінінің таралуы" },
+                { q: "Атлах шайқасының нәтижесі?", a: "Қытайлар жеңілді" },
+                { q: "Атлах шайқасынан кейін?", a: "Қытайлар Жетісудан біржолата кетті" },
+                { q: "Араб-қытай шапқыншылығы және ішкі қақтығыстар салдарынан Түргеш қағанатының құлаған кезі?", a: "756 жылы" },
+                { q: "Түргеш қағанатының құлау себебі?", a: "Араб-қытай шапқыншылығы, қара және сары түргештер" },
+                { q: "Түргеш қағанатының орнына келген тайпа?", a: "Қарлұқтар" },
+                { q: "Түргештер өз саяси үстемдігін орнатты?", a: "Жетісуда" },
+                { q: "Сұлық қаған тұсында түргештердің ордасы?", a: "Тараз" }
+            ],
+            "Қарлұқ қағанаты": [
+                { q: "Қарлұқ қағанатының хронологиясы?", a: "756-940 жылдар" },
+                { q: "VIII ғасырдың ортасында Жетісу жерінде құрылған мемлекет?", a: "Қарлұқтар" },
+                { q: "Жетісу аймағында өмір сүрген ерте ортағасырлық мемлекет?", a: "Қарлұқтар" },
+                { q: "Түргеш қағанатының әлсірегенін пайдаланып, 756 жылы билікті өз қолына алған тайпа?", a: "Қарлұқ" },
+                { q: "Х ғасырда Қарлұқтарды көне түркілер деп жазған ғалым?", a: "Ибн әл-Факих" },
+                { q: "Қарлұқ тайпаларының негізгі топтасып орналасқан жері?", a: "Алтайдан Балқаш көліне дейін" },
+                { q: "Алтай тауынан Балқаш көліне дейінгі аралықта өмір сүрген мемлекет?", a: "Қарлұқтар" },
+                { q: "VII ғасырдың соңында қарлұқтар ықпалында болған мемлекет?", a: "Шығыс Түрік қағанатының" },
+                { q: "Қарлұқтардың Жетісуға қоныс аудару себебі?", a: "Ұйғыр қағанатынан жеңілуі" },
+                { q: "Ұйғыр қағанатынан жеңілгеннен кейін қарлұқтар жылжыған аймақ?", a: "Жетісу" },
+                { q: "Қарлұқтар оғыз тайпаларының қарсылығына кезікті?", a: "Жетісуда" },
+                { q: "VIII ғасырдың ортасында оғыздарды Жетісудан Сырдарияның төменгі ағысына ығыстырды?", a: "қарлұқтар" },
+                { q: "VIII-X ғасырларда Жетісу мен Оңтүстік Қазақстанның көптеген тайпалары бағынған мемлекет?", a: "қарлұқтар" },
+                { q: "Қарлұқ тайпаларының көсемдері иеленген лауазым?", a: "жабғу" },
+                { q: "Қарлұқ билеушілерінің 840 жылдан кейінгі иеленген лауазымы?", a: "қаған" },
+                { q: "Қарлұқтар құрамындағы жетекші саналған тайпа?", a: "Бұлақ" },
+                { q: "Қарлұқтар осы мемлекетпен одақтасып, 840 жылы Ұйғыр қағанатын талқандады?", a: "Енисей қырғыздарымен" },
+                { q: "Қарлұқ қағанатының орталығы?", a: "Суяб" },
+                { q: "Қарлұқ еліндегі қалалар саны?", a: "25" },
+                { q: "Саманилер жаулап алған Қарлұқ қағанатының қалалары?", a: "Испиджаб, Тараз" },
+                { q: "Екі жүз жылдай билік құрған мемлекет?", a: "Қарлұқтар" },
+                { q: "Қарлұқ қағанатының әлсіреу себебі?", a: "Араб басқыншылығы нәтижесінде" },
+                { q: "940 жылы Қарлұқ қағанатын талқандады?", a: "Қашғардың түрік билеушілері" },
+                { q: "Х ғасырдың ортасында саяси билігін жоғалтқан мемлекет?", a: "Қарлұқ қағанаты" },
+                { q: "Қарлұқ қағанатының орнына құрылған мемлекет?", a: "Қарахан" },
+                { q: "Қарлұқ қағанаты өмір сүрген ғасырлар?", a: "VIII-X ғғ. аралығы" }
+            ],
+            "Түрік қағанаты": [
+                { q: "Еуразия даласында VI ғасырдан XIII ғасырға дейінгі кезең?", a: "түркі дәуірі" },
+                { q: "552 жылы Орталық Азияда пайда болған жаңа мемлекет?", a: "Түрік қағанаты" },
+                { q: "Түрік қағанатының өмір сүрген мерзімі?", a: "552-603 жж." },
+                { q: "Түркілер әлемдік тарих сахнасына шықты?", a: "металл өндіру арқылы" },
+                { q: "«Түрік» этнонимі бірінші рет деректерде кездесті?", a: "542 ж." },
+                { q: "545 жылы Бумын ордасына келген елшілік?", a: "қытай елшісі" },
+                { q: "VI ғ. ортасына дейін түріктер бағынышты болды?", a: "Жужандарға" },
+                { q: "Түркілер жужан қағанына салықты төледі?", a: "темір түрінде" },
+                { q: "552 жылы Бумын қағанның елхан атағын алуға себеп болған оқиға?", a: "жужан қағандығын талқандауы" },
+                { q: "552 жылы Түрік қағанатын құрған?", a: "Бумын" },
+                { q: "Түрік қағанатының билеушілері?", a: "Бумын, Мұқан, Иштеми" },
+                { q: "Бумыннан кейін билікке келген Түрік қағанатының билеушісі?", a: "Мұқан" },
+                { q: "Орталық Азия мен Оңтүстік Сібірді бағындырған билеуші?", a: "Мұқан" },
+                { q: "Түрік қағанатын «Ұлы Даланың шығыстағы қожасына» айналдырған?", a: "Мұқан қаған" },
+                { q: "Қазақстан, Орта Азия аумағын бағындырып, Еділ мен Солтүстік Кавказға шыққан билеуші?", a: "Иштеми (Істеми)" },
+                { q: "Сауда жағдайына байланысты Иран мен Византияға елшіліктер жіберіп, келіссөз жүргізген түрік қағаны?", a: "Иштеми" },
+                { q: "Ұлы Жібек жолындағы саудаға байланысты Иранға қарсы одақ құрған елдер?", a: "Түрік қағанаты мен Византия" },
+                { q: "Ұлы қағанның ордасы орналасқан аймақ?", a: "Алтай" },
+                { q: "Түрік қағанатында жоғары билеуші?", a: "қаған" },
+                { q: "Түркілердің билеушілері шыққан әулет?", a: "Ашина" },
+                { q: "Түрік мемлекетінде қарапайым халық аталды?", a: "«будун»" },
+                { q: "Түркілердің наным-сенімі?", a: "Тәңіршілдік" },
+                { q: "603 жылы Батыс және Шығыс болып екіге бөлінген мемлекет?", a: "Түрік қағанаты" }
+            ],
+            "Батыс Түрік қағанаты": [
+                { q: "Батыс Түрік қағанатының өмір сүрген мерзімі?", a: "603-704 жылдар" },
+                { q: "Он оқ будун елі?", a: "Батыс Түрік қағандығы" },
+                { q: "Батыс Түрік қағанаты түпкілікті жеке мемлекетке айналды?", a: "Тардуш қаған тұсында" },
+                { q: "Батыс-Түрік қағанатының саяси билігін күшейткен қағандар?", a: "Шегу, Тон" },
+                { q: "Шегу мен Тон-ябғу қағандар тұсында өркендеген мемлекет?", a: "Батыс-Түрік қағанаты" },
+                { q: "Батыс Түрік қағанатында «он тайпа», «он оқ будун» жүйесін енгізген?", a: "Ешбар Елтеріс" },
+                { q: "Батыс Түрік қағанатында ұзаққа созылған дағдарыс басталды?", a: "Тон-ябғу өлімінен кейін" },
+                { q: "Батыс Түрік қағанатының негізі он тайпа алып жатқан территория?", a: "Қаратаудан Жоңғарияға дейін" },
+                { q: "Батыс Түрік қағанатына енген тайпалар?", a: "«Он тайпа», дулу, нушеби" },
+                { q: "Батыс Түрік қағанатында жоғары лауазымды иеленген қаған руынан шыққандарға берілген атақ?", a: "яғбу, шад, елтебер" },
+                { q: "Батыс-Түрік қағанатының астаналары?", a: "Мыңбұлақ, Суяб" },
+                { q: "Батыс қағанаттың орталығы Суяб қаласы орналасқан аймақ?", a: "Шу өзені бойы" },
+                { q: "Батыс Түрік қағанатының жазғы ордасы?", a: "Мыңбұлақ" },
+                { q: "Батыс Түрік қағанатының ыдырауына әсер еткен оқиға?", a: "Қытай шапқыншылығы" },
+                { q: "Батыс Түрік қағанатының орнына Жетісуда құрылған мемлекет?", a: "Түргеш қағанаты" }
+            ],
+            "Шығыс Түрік қағанаты": [
+                { q: "Шығыс Түрік қағанатының өмір сүрген мерзімі?", a: "682-744 жылдар" },
+                { q: "VII ғасырдың аяғы мен VIII ғасырдың ортасында Қазақстан, Орта Азия, Оңтүстік Сібір жерін алып жатқан мемлекет?", a: "Шығыс Түрік қағандығы" },
+                { q: "682 жылы Моңғолияда өз мемлекетін қалпына келтірді?", a: "Шығыс Түрік" },
+                { q: "682 жылы Моңғолияда өз мемлекетін қалпына келтірген Шығыс Түрік қағанатының алғашқы қағаны?", a: "Елтеріс (Құтлық)" },
+                { q: "Шығыс Түрік қағанатын қуатты мемлекетке айналдырған қаған?", a: "Қапаған" },
+                { q: "Орталық Азияны бағындырған Шығыс Түрік қағанаты қайта өркендеткен?", a: "Білге, Күлтегін" },
+                { q: "Шығыс Түрік қағанатының билеушілері Білге мен Күлтегін тиімді шартқа қол жеткізген мемлекет?", a: "Қытай" },
+                { q: "Түрік халқының жауынгерлік даңқын асқақтатқан қолбасшы?", a: "Күлтегін" },
+                { q: "Шығыс Түрік қағандығында жауынгерлік даңқымен танымал болды?", a: "Тоныкөк" },
+                { q: "Шығыс Түрік қағанатының орнына 744 жылы орнаған мемлекет?", a: "Ұйғыр қағанаты" }
+            ],
+            "Басқалар (Қаңлы, Соғды)": [
+                { q: "Битянь қаласы астанасы болған мемлекет?", a: "Қаңлылар" },
+                { q: "Б.з.б. II ғасырда Сырдарияның орта ағысында өмір сүрген мемлекет?", a: "Қаңлы" },
+                { q: "Қаңлылар туралы дерек көздері?", a: "Қытай деректері" },
+                { q: "VI-VIII ғасырларда Жетісуға қоныстанған ел?", a: "соғдылар" },
+                { q: "Орта Азияда өмір сүрген иран тілдес халық?", a: "Соғдылар" },
+                { q: "Соғдылардың Жетісуға қоныс аударуы саудаға байланысты деп айтқан ғалым?", a: "Бартольд" },
+                { q: "Соғдылардың Жетісуға қоныстануы дамытты?", a: "егіншілікті" }
+            ]
+        };
+
+        let currentCategory = Object.keys(quizData)[0];
+        let currentQuestions = [...quizData[currentCategory]];
+        let currentCardIndex = 0;
+        let isFlipped = false;
+
+        const flashcardInner = document.getElementById('flashcard-inner');
+        const questionEl = document.getElementById('card-question');
+        const answerEl = document.getElementById('card-answer');
+        const counterEl = document.getElementById('card-counter');
+        const currentCategoryTitle = document.getElementById('current-category-title');
+        const tabsContainer = document.getElementById('category-tabs');
+        const questionsList = document.getElementById('questions-list');
+
+        function init() {
+            renderTabs();
+            loadCategory(currentCategory);
+        }
+
+        function renderTabs() {
+            tabsContainer.innerHTML = '';
+            Object.keys(quizData).forEach(category => {
+                const button = document.createElement('button');
+                button.textContent = category;
+                button.className = `whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                    category === currentCategory 
+                    ? 'bg-blue-600 text-white shadow-md' 
+                    : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
+                }`;
+                button.onclick = () => loadCategory(category);
+                tabsContainer.appendChild(button);
+            });
+        }
+
+        function loadCategory(category) {
+            currentCategory = category;
+            currentQuestions = [...quizData[category]];
+            currentCardIndex = 0;
+            if (isFlipped) flipCard(false); // Reset flip state without animation delay
+            
+            renderTabs();
+            updateCardDisplay();
+            renderList();
+        }
+
+        function updateCardDisplay() {
+            if (currentQuestions.length === 0) return;
+            
+            // Allow flip animation to complete before changing text if currently flipped
+            if(isFlipped) {
+                isFlipped = false;
+                flashcardInner.classList.remove('is-flipped');
+                setTimeout(() => {
+                    setCardContent();
+                }, 300);
+            } else {
+                setCardContent();
+            }
+        }
+
+        function setCardContent() {
+            const card = currentQuestions[currentCardIndex];
+            questionEl.textContent = card.q;
+            answerEl.textContent = card.a;
+            counterEl.textContent = `${currentCardIndex + 1} / ${currentQuestions.length}`;
+            currentCategoryTitle.textContent = currentCategory;
+        }
+
+        function flipCard(forceState = null) {
+            if (forceState !== null) {
+                isFlipped = forceState;
+            } else {
+                isFlipped = !isFlipped;
+            }
+            
+            if (isFlipped) {
+                flashcardInner.classList.add('is-flipped');
+            } else {
+                flashcardInner.classList.remove('is-flipped');
+            }
+        }
+
+        function nextCard() {
+            if (currentCardIndex < currentQuestions.length - 1) {
+                currentCardIndex++;
+                updateCardDisplay();
+            } else {
+                // Loop back to start
+                currentCardIndex = 0;
+                updateCardDisplay();
+            }
+        }
+
+        function prevCard() {
+            if (currentCardIndex > 0) {
+                currentCardIndex--;
+                updateCardDisplay();
+            } else {
+                // Go to end
+                currentCardIndex = currentQuestions.length - 1;
+                updateCardDisplay();
+            }
+        }
+
+        function shuffleCards() {
+            for (let i = currentQuestions.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [currentQuestions[i], currentQuestions[j]] = [currentQuestions[j], currentQuestions[i]];
+            }
+            currentCardIndex = 0;
+            updateCardDisplay();
+        }
+
+        function renderList() {
+            questionsList.innerHTML = '';
+            quizData[currentCategory].forEach((item, index) => {
+                const li = document.createElement('li');
+                li.className = 'p-4 hover:bg-gray-50 transition-colors cursor-pointer flex flex-col gap-2';
+                li.onclick = () => {
+                    // Find index in current potentially shuffled array or reset shuffle
+                    currentQuestions = [...quizData[currentCategory]];
+                    currentCardIndex = index;
+                    updateCardDisplay();
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                };
+                
+                li.innerHTML = `
+                    <div class="flex gap-4 items-start">
+                        <span class="text-blue-500 font-bold mt-1">${index + 1}.</span>
+                        <div class="flex-1">
+                            <p class="font-medium text-gray-800">${item.q}</p>
+                            <p class="text-green-600 font-semibold mt-1">— ${item.a}</p>
+                        </div>
+                    </div>
+                `;
+                questionsList.appendChild(li);
+            });
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight') {
+                nextCard();
+            } else if (e.key === 'ArrowLeft') {
+                prevCard();
+            } else if (e.key === ' ' || e.key === 'Spacebar') {
+                e.preventDefault(); // Prevent scrolling
+                flipCard();
+            }
+        });
+
+        // Initialize App
+        init();
+    </script>
+</body>
+</html>
+```
